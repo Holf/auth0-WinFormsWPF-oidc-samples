@@ -10,44 +10,12 @@ using Microsoft.Win32;
 
 namespace WPFSample
 {
-    // https://stackoverflow.com/a/43232360/169334
-    public class CookieClearer
-    {
-        [System.Runtime.InteropServices.DllImport("wininet.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto, SetLastError = true)]
-        public static extern bool InternetSetOption(int hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);
-
-        public static unsafe void SuppressWininetBehavior()
-        {
-            /* SOURCE: http://msdn.microsoft.com/en-us/library/windows/desktop/aa385328%28v=vs.85%29.aspx
-                * INTERNET_OPTION_SUPPRESS_BEHAVIOR (81):
-                *      A general purpose option that is used to suppress behaviors on a process-wide basis. 
-                *      The lpBuffer parameter of the function must be a pointer to a DWORD containing the specific behavior to suppress. 
-                *      This option cannot be queried with InternetQueryOption. 
-                *      
-                * INTERNET_SUPPRESS_COOKIE_PERSIST (3):
-                *      Suppresses the persistence of cookies, even if the server has specified them as persistent.
-                *      Version:  Requires Internet Explorer 8.0 or later.
-                */
-
-            int option = (int)3/* INTERNET_SUPPRESS_COOKIE_PERSIST*/;
-            int* optionPtr = &option;
-
-            bool success = InternetSetOption(0, 81/*INTERNET_OPTION_SUPPRESS_BEHAVIOR*/, new IntPtr(optionPtr), sizeof(int));
-            if (!success)
-            {
-                //Something went wrong
-            }
-        }
-    }
-    
-    
-    
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        string[] _connectionNames = new string[]
+        readonly string[] _connectionNames = 
         {
             "Username-Password-Authentication",
             "google-oauth2",
@@ -131,7 +99,7 @@ namespace WPFSample
                 String.Concat(@"Software\Microsoft\Internet Explorer\Main\FeatureControl\", feature),
                 RegistryKeyPermissionCheck.ReadWriteSubTree))
             {
-                key.SetValue(appName, (UInt32)value, RegistryValueKind.DWord);
+                key.SetValue(appName, value, RegistryValueKind.DWord);
             }
         }
 
@@ -142,34 +110,10 @@ namespace WPFSample
             var fileName = System.IO.Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName);
 
             // make the control is not running inside Visual Studio Designer
-            if (String.Compare(fileName, "devenv.exe", true) == 0 || String.Compare(fileName, "XDesProc.exe", true) == 0)
+            if (String.Compare(fileName, "devenv.exe", StringComparison.OrdinalIgnoreCase) == 0 || String.Compare(fileName, "XDesProc.exe", StringComparison.OrdinalIgnoreCase) == 0)
                 return;
 
             SetBrowserFeatureControlKey("FEATURE_BROWSER_EMULATION", fileName, GetBrowserEmulationMode()); // Webpages containing standards-based !DOCTYPE directives are displayed in IE10 Standards mode.
-            
-            //SetBrowserFeatureControlKey("FEATURE_AJAX_CONNECTIONEVENTS", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_ENABLE_CLIPCHILDREN_OPTIMIZATION", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_MANAGE_SCRIPT_CIRCULAR_REFS", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_DOMSTORAGE ", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_GPU_RENDERING ", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_IVIEWOBJECTDRAW_DMLT9_WITH_GDI  ", fileName, 0);
-            //SetBrowserFeatureControlKey("FEATURE_DISABLE_LEGACY_COMPRESSION", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_LOCALMACHINE_LOCKDOWN", fileName, 0);
-            //SetBrowserFeatureControlKey("FEATURE_BLOCK_LMZ_OBJECT", fileName, 0);
-            //SetBrowserFeatureControlKey("FEATURE_BLOCK_LMZ_SCRIPT", fileName, 0);
-            //SetBrowserFeatureControlKey("FEATURE_DISABLE_NAVIGATION_SOUNDS", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_SCRIPTURL_MITIGATION", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_SPELLCHECKING", fileName, 0);
-            //SetBrowserFeatureControlKey("FEATURE_STATUS_BAR_THROTTLING", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_TABBED_BROWSING", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_VALIDATE_NAVIGATE_URL", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_WEBOC_DOCUMENT_ZOOM", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_WEBOC_POPUPMANAGEMENT", fileName, 0);
-            //SetBrowserFeatureControlKey("FEATURE_WEBOC_MOVESIZECHILD", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_ADDON_MANAGEMENT", fileName, 0);
-            //SetBrowserFeatureControlKey("FEATURE_WEBSOCKET", fileName, 1);
-            //SetBrowserFeatureControlKey("FEATURE_WINDOW_RESTRICTIONS ", fileName, 0);
-            //SetBrowserFeatureControlKey("FEATURE_XMLHTTP", fileName, 1);
         }
 
         private UInt32 GetBrowserEmulationMode()
@@ -206,7 +150,6 @@ namespace WPFSample
                     break;
 
                     // use IE11 mode by default
-
             }
 
             return mode;
